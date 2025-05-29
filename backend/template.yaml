@@ -1,43 +1,73 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  incident-scribe-backend
+Description: Incident Management API - Serverless Backend
 
-  Sample SAM Template for incident-scribe-backend
-  
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
+    Runtime: nodejs18.x
+    MemorySize: 128
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        INCIDENTS_TABLE: !Ref IncidentsTable
 
 Resources:
-  HelloWorldFunction:
+  IncidentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Incidents
+      AttributeDefinitions:
+        - AttributeName: incidentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: incidentId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  IncidentApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: IncidentApi
+      StageName: Prod
+      Cors:
+        AllowMethods: "'OPTIONS,GET,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  IncidentFunction:
     Type: AWS::Serverless::Function
     Properties:
-      PackageType: Image
-      Architectures:
-        - x86_64
+      CodeUri: src/functions/incident/
+      Handler: app.handler
       Events:
-        HelloWorld:
+        GetIncidents:
           Type: Api
           Properties:
-            Path: /hello
+            RestApiId: !Ref IncidentApi
+            Path: /incidents
             Method: get
-    Metadata:
-      DockerTag: nodejs18.x-v1
-      DockerContext: ./hello-world
-      Dockerfile: Dockerfile
+        PostIncident:
+          Type: Api
+          Properties:
+            RestApiId: !Ref IncidentApi
+            Path: /incidents
+            Method: post
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:Scan
+              Resource: !GetAtt IncidentsTable.Arn
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${IncidentApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/incidents"
+
+  IncidentsTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref IncidentsTable

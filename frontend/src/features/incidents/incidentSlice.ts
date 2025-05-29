@@ -52,12 +52,25 @@ const incidentSlice = createSlice({
         incident.status = action.payload.status;
       }
     },
-    // You can add more reducers here for editing/removing incidents
+    setIncidents: (state, action: PayloadAction<Incident[]>) => {
+      state.items = action.payload;
+    },
+    updateIncident: (
+      state,
+      action: PayloadAction<{ id: string; changes: Partial<Incident> }>
+    ) => {
+      const incident = state.items.find((i) => i.id === action.payload.id);
+      if (incident) {
+        Object.assign(incident, action.payload.changes);
+      }
+    },
   },
 
 });
 
 
 
-export const { addIncident, updateIncidentContext, updateIncidentStatus } = incidentSlice.actions;
+export const { addIncident, updateIncidentContext, updateIncidentStatus, setIncidents, updateIncident } = incidentSlice.actions;
 export default incidentSlice.reducer;
+export const selectAllIncidents = (state: { incidents: IncidentState }) => state.incidents.items;
+

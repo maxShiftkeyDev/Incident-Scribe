@@ -3,8 +3,7 @@ import { Dialog, DialogTitle, DialogContent } from "@mui/material";
 import IncidentForm from "./IncidentForm";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router";
-import { useDispatch } from "react-redux";
-import { addIncident } from "../features/incidents/incidentSlice";
+import { useIncidents } from "../hooks/useIncidents";
 
 export default function CreateIncidentModal({
   open,
@@ -13,10 +12,10 @@ export default function CreateIncidentModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const dispatch = useDispatch();
+  const { createIncident } = useIncidents();
   const navigate = useNavigate();
 
-  const handleCreate = (data: { title: string; description: string }) => {
+  const handleCreate = async (data: { title: string; description: string }) => {
     const newIncident = {
       id: uuidv4(),
       title: data.title,
@@ -26,9 +25,13 @@ export default function CreateIncidentModal({
       status: "open" as const,
     };
 
-    dispatch(addIncident(newIncident)); // Save to Redux
-    onClose();
-    navigate(`/incident/${newIncident.id}`);
+    try {
+      await createIncident(newIncident); // Syncs with backend and dispatches
+      onClose();
+      navigate(`/incident/${newIncident.id}`);
+    } catch (error) {
+      console.error("Failed to create incident", error);
+    }
   };
 
   return (
