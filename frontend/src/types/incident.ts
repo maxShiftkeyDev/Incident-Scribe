@@ -8,4 +8,5 @@ export interface Incident {
     slackChannels?: string[]; // store channel IDs
     zoomCalls?: string[];
   };
+  status: "open" | "closed";
 } 

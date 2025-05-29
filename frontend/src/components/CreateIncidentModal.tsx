@@ -23,7 +23,7 @@ export default function CreateIncidentModal({
       description: data.description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      status: "open",
+      status: "open" as const,
     };
 
     dispatch(addIncident(newIncident)); // Save to Redux
