@@ -57,23 +57,23 @@ const IncidentDetail = () => {
           </Box>
 
           <Box display="flex" alignItems="center" gap={2}>
-  <Chip
-    label={incident.status}
-    color={incident.status === "open" ? "success" : "error"}
-    variant="outlined"
-    size="small"
-  />
-  {incident.status === "open" && (
-    <Button
-      variant="outlined"
-      color="error"
-      size="small"
-      onClick={handleCloseIncident}
-    >
-      Close Incident
-    </Button>
-  )}
-</Box>
+            <Chip
+              label={incident.status}
+              color={incident.status === "open" ? "success" : "error"}
+              variant="outlined"
+              size="small"
+            />
+            {incident.status === "open" && (
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={handleCloseIncident}
+              >
+                Close Incident
+              </Button>
+            )}
+          </Box>
 
         </Box>
 

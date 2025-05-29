@@ -2,7 +2,6 @@
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, AppBar, Toolbar, Typography } from "@mui/material";
 import { Outlet, useNavigate } from "react-router";
 import HomeIcon from "@mui/icons-material/Home";
-import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/List";
 
 const drawerWidth = 240;
