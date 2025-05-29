@@ -4,4 +4,8 @@ export interface Incident {
   description: string;
   createdAt: string;
   updatedAt: string;
+  context?: {
+    slackChannels?: string[]; // store channel IDs
+    zoomCalls?: string[];
+  };
 } 

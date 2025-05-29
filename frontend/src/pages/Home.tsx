@@ -1,14 +1,31 @@
-import { Box } from "@mui/material";
+import { Container, Typography, Stack, Box } from "@mui/material";
+import CreateIncidentButton from "../components/CreateIncidentButton";
+import IncidentList from "../components/IncidentList";
 
-const Home: React.FC = () => {
-
-    return (
+const Home = () => (
+  <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Stack spacing={4}>
       <Box>
-        <h1>Welcome to the Incident Manager</h1>
-        <p>Select an option from the menu to get started.</p>
+        <Typography variant="h5" fontWeight={600}>
+          Welcome to the Incident Manager
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Track, document, and manage incident response with integrated context.
+        </Typography>
       </Box>
-    );
-  };
-  
-  export default Home;
-  
+
+      <Box>
+        <CreateIncidentButton />
+      </Box>
+
+      <Box>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Recent Incidents
+        </Typography>
+        <IncidentList showHeading={false} maxHeight="300px" />
+      </Box>
+    </Stack>
+  </Container>
+);
+
+export default Home;

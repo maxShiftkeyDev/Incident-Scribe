@@ -1,13 +1,18 @@
-import { Box } from "@mui/material";
+import { Container, Stack, Typography, Box } from "@mui/material";
+import IncidentList from "../components/IncidentList";
 
-const IncidentsList: React.FC = () => {
-    return (
+const IncidentsListPage = () => (
+  <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Stack spacing={3}>
       <Box>
-        <h1>Past Incidents</h1>
-        <p>This page will display a list of all incidents.</p>
+        <Typography variant="h5" fontWeight={600}>Past Incidents</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Click any incident to view full details and manage its context.
+        </Typography>
       </Box>
-    );
-  };
-  
-  export default IncidentsList;
-  
+      <IncidentList />
+    </Stack>
+  </Container>
+);
+
+export default IncidentsListPage;

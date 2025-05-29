@@ -12,8 +12,7 @@ export default function DrawerLayout() {
 
   const menuItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
-    { text: "Create Incident", icon: <AddIcon />, path: "/create" },
-    { text: "Past Incidents", icon: <ListAltIcon />, path: "/incidents" },
+    { text: "Incidents", icon: <ListAltIcon />, path: "/incidents" },
   ];
 
   return (

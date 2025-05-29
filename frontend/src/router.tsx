@@ -2,7 +2,6 @@
 import { createBrowserRouter } from "react-router";
 import DrawerLayout from "./layouts/DrawerLayout";
 import Home from "./pages/Home";
-import CreateIncident from "./pages/CreateIncident";
 import IncidentDetail from "./pages/IncidentDetail";
 import IncidentsList from "./pages/IncidentsList";
 
@@ -14,10 +13,6 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
-      },
-      {
-        path: "/create",
-        element: <CreateIncident />,
       },
       {
         path: "/incidents",
