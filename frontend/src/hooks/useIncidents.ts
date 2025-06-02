@@ -1,13 +1,13 @@
-// src/hooks/useIncidents.ts
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback } from "react";
 import {
   addIncident,
   setIncidents,
   updateIncident,
+  updateIncidentStatus,
   selectAllIncidents,
 } from "../features/incidents/incidentSlice";
-import type { Incident } from "../types/incident";
+import type { Incident, IncidentContext } from "../types/incident";
 import axios from "axios";
 
 const API_BASE = "https://li97gzptaj.execute-api.us-east-1.amazonaws.com/Prod";
@@ -40,13 +40,61 @@ export function useIncidents() {
   );
 
   const updateIncidentById = useCallback(
-    async (id: string, updates: Partial<Incident>) => {
+    async (incidentId: string, updates: Partial<Incident>) => {
       try {
-        const res = await axios.put(`${API_BASE}/incidents/${id}`, updates);
-        dispatch(updateIncident({ id, changes: updates }));
+        const res = await axios.put(
+          `${API_BASE}/incidents/${incidentId}`,
+          updates
+        );
+        dispatch(updateIncident({ incidentId, changes: updates }));
         return res.data;
       } catch (err) {
         console.error("Failed to update incident", err);
+        throw err;
+      }
+    },
+    [dispatch]
+  );
+
+  const updateIncidentStatusById = useCallback(
+    async (incidentId: string, status: "open" | "closed") => {
+      try {
+        // PUT request to the new backend endpoint
+        const res = await axios.put(
+          `${API_BASE}/incidents/${incidentId}/status`,
+          { status }
+        );
+
+        // Update Redux state
+        dispatch(updateIncidentStatus({ incidentId, status }));
+        return res.data;
+      } catch (err) {
+        console.error("Failed to update incident status", err);
+        throw err;
+      }
+    },
+    [dispatch]
+  );
+
+  const updateIncidentContextById = useCallback(
+    async (incidentId: string, context: Partial<IncidentContext>) => {
+      try {
+        const res = await axios.put(
+          `${API_BASE}/incidents/${incidentId}/context`,
+          { context }
+        );
+
+        // Update Redux state with fresh context from backend
+        dispatch(
+          updateIncident({
+            incidentId,
+            changes: { context: res.data.context },
+          })
+        );
+
+        return res.data;
+      } catch (err) {
+        console.error("Failed to update incident context", err);
         throw err;
       }
     },
@@ -58,5 +106,7 @@ export function useIncidents() {
     fetchIncidents,
     createIncident,
     updateIncidentById,
+    updateIncidentContextById,
+    updateIncidentStatusById, // Added!
   };
 }

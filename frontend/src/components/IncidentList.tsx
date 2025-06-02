@@ -32,6 +32,10 @@ const IncidentList: React.FC<IncidentListProps> = ({
     fetchIncidents();
   }, [fetchIncidents]);
 
+  useEffect(() => {
+    console.log(incidents);
+  }, [incidents]);
+
   const sortedIncidents = [...incidents].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -48,11 +52,21 @@ const IncidentList: React.FC<IncidentListProps> = ({
           borderColor="divider"
           sx={{ fontWeight: 500 }}
         >
-          <Box flex={2}><Typography variant="caption">Title</Typography></Box>
-          <Box flex={3}><Typography variant="caption">Description</Typography></Box>
-          <Box flex={1}><Typography variant="caption">Context</Typography></Box>
-          <Box flex={1}><Typography variant="caption">Status</Typography></Box>
-          <Box flex={1} textAlign="right"><Typography variant="caption">Created At</Typography></Box>
+          <Box flex={2}>
+            <Typography variant="caption">Title</Typography>
+          </Box>
+          <Box flex={3}>
+            <Typography variant="caption">Description</Typography>
+          </Box>
+          <Box flex={1}>
+            <Typography variant="caption">Context</Typography>
+          </Box>
+          <Box flex={1}>
+            <Typography variant="caption">Status</Typography>
+          </Box>
+          <Box flex={1} textAlign="right">
+            <Typography variant="caption">Created At</Typography>
+          </Box>
         </Box>
       )}
 
@@ -62,21 +76,38 @@ const IncidentList: React.FC<IncidentListProps> = ({
 
           if (incident.context?.slackChannels?.length) {
             contextIcons.push(
-              <Avatar key="slack" src={SlackLogo} alt="Slack" variant="square" sx={{ width: 20, height: 20 }} />
+              <Avatar
+                key="slack"
+                src={SlackLogo}
+                alt="Slack"
+                variant="square"
+                sx={{ width: 20, height: 20 }}
+              />
             );
           }
           if (incident.context?.zoomCalls?.length) {
             contextIcons.push(
-              <Avatar key="zoom" src={ZoomLogo} alt="Zoom" variant="square" sx={{ width: 20, height: 20 }} />
+              <Avatar
+                key="zoom"
+                src={ZoomLogo}
+                alt="Zoom"
+                variant="square"
+                sx={{ width: 20, height: 20 }}
+              />
             );
           }
 
           return (
-            <Box key={incident.id}>
-              <ListItemButton onClick={() => navigate(`/incident/${incident.id}`)} sx={{ py: 2, px: 2 }}>
+            <Box key={incident.incidentId}>
+              <ListItemButton
+                onClick={() => navigate(`/incident/${incident.incidentId}`)}
+                sx={{ py: 2, px: 2 }}
+              >
                 <Box display="flex" alignItems="center" width="100%" gap={2}>
                   <Box flex={2}>
-                    <Typography variant="subtitle2">{incident.title}</Typography>
+                    <Typography variant="subtitle2">
+                      {incident.title}
+                    </Typography>
                   </Box>
                   <Box flex={3}>
                     <Typography variant="body2" color="text.secondary" noWrap>
@@ -85,7 +116,9 @@ const IncidentList: React.FC<IncidentListProps> = ({
                         : incident.description}
                     </Typography>
                   </Box>
-                  <Box flex={1} display="flex" gap={0.5}>{contextIcons}</Box>
+                  <Box flex={1} display="flex" gap={0.5}>
+                    {contextIcons}
+                  </Box>
                   <Box flex={1}>
                     <Chip
                       label={incident.status}
@@ -95,7 +128,11 @@ const IncidentList: React.FC<IncidentListProps> = ({
                     />
                   </Box>
                   <Box flex={1} textAlign="right">
-                    <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ whiteSpace: "nowrap" }}
+                    >
                       {new Date(incident.createdAt).toLocaleString()}
                     </Typography>
                   </Box>

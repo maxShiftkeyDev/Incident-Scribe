@@ -1,17 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
-export interface Incident {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  status: "open" | "closed";
-  context?: {
-    slackChannels?: string[]; // store channel IDs
-    zoomCalls?: string[];
-  };
-}
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { type Incident, type IncidentContext } from "../../types/incident"; // ✅ use your shared types!
 
 interface IncidentState {
   items: Incident[];
@@ -22,7 +10,7 @@ const initialState: IncidentState = {
 };
 
 const incidentSlice = createSlice({
-  name: 'incidents',
+  name: "incidents",
   initialState,
   reducers: {
     addIncident: (state, action: PayloadAction<Incident>) => {
@@ -31,11 +19,13 @@ const incidentSlice = createSlice({
     updateIncidentContext: (
       state,
       action: PayloadAction<{
-        id: string;
-        context: Partial<Incident["context"]>;
+        incidentId: string;
+        context: Partial<IncidentContext>;
       }>
     ) => {
-      const incident = state.items.find((i) => i.id === action.payload.id);
+      const incident = state.items.find(
+        (i) => i.incidentId === action.payload.incidentId
+      );
       if (incident) {
         incident.context = {
           ...incident.context,
@@ -45,9 +35,11 @@ const incidentSlice = createSlice({
     },
     updateIncidentStatus: (
       state,
-      action: PayloadAction<{ id: string; status: "open" | "closed" }>
+      action: PayloadAction<{ incidentId: string; status: "open" | "closed" }>
     ) => {
-      const incident = state.items.find((i) => i.id === action.payload.id);
+      const incident = state.items.find(
+        (i) => i.incidentId === action.payload.incidentId
+      );
       if (incident) {
         incident.status = action.payload.status;
       }
@@ -57,20 +49,26 @@ const incidentSlice = createSlice({
     },
     updateIncident: (
       state,
-      action: PayloadAction<{ id: string; changes: Partial<Incident> }>
+      action: PayloadAction<{ incidentId: string; changes: Partial<Incident> }>
     ) => {
-      const incident = state.items.find((i) => i.id === action.payload.id);
+      const incident = state.items.find(
+        (i) => i.incidentId === action.payload.incidentId
+      );
       if (incident) {
         Object.assign(incident, action.payload.changes);
       }
     },
   },
-
 });
 
+export const {
+  addIncident,
+  updateIncidentContext,
+  updateIncidentStatus,
+  setIncidents,
+  updateIncident,
+} = incidentSlice.actions;
 
-
-export const { addIncident, updateIncidentContext, updateIncidentStatus, setIncidents, updateIncident } = incidentSlice.actions;
 export default incidentSlice.reducer;
-export const selectAllIncidents = (state: { incidents: IncidentState }) => state.incidents.items;
-
+export const selectAllIncidents = (state: { incidents: IncidentState }) =>
+  state.incidents.items;

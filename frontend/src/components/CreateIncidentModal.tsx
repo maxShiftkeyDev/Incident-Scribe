@@ -17,7 +17,7 @@ export default function CreateIncidentModal({
 
   const handleCreate = async (data: { title: string; description: string }) => {
     const newIncident = {
-      id: uuidv4(),
+      incidentId: uuidv4(),
       title: data.title,
       description: data.description,
       createdAt: new Date().toISOString(),
@@ -28,7 +28,7 @@ export default function CreateIncidentModal({
     try {
       await createIncident(newIncident); // Syncs with backend and dispatches
       onClose();
-      navigate(`/incident/${newIncident.id}`);
+      navigate(`/incident/${newIncident.incidentId}`);
     } catch (error) {
       console.error("Failed to create incident", error);
     }

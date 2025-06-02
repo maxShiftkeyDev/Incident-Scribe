@@ -9,24 +9,24 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router";
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { updateIncidentStatus } from "../features/incidents/incidentSlice";
+import { useAppSelector } from "../hooks";
+import { useIncidents } from "../hooks/useIncidents";
 import ManageContext from "../components/ManageContext";
 
 const IncidentDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const dispatch = useAppDispatch();
+  const { incidentId } = useParams<{ incidentId: string }>();
+  const { updateIncidentStatusById } = useIncidents();
 
   const incident = useAppSelector((state) =>
-    state.incidents.items.find((i) => i.id === id)
+    state.incidents.items.find((i) => i.incidentId === incidentId)
   );
 
   useEffect(() => {
     console.group("Incident Detail Debug");
-    console.log("Selected Incident ID:", id);
+    console.log("Selected Incident ID:", incidentId);
     console.log("Incident:", incident);
     console.groupEnd();
-  }, [id, incident]);
+  }, [incidentId, incident]);
 
   if (!incident) {
     return (
@@ -38,15 +38,25 @@ const IncidentDetail = () => {
     );
   }
 
-  const handleCloseIncident = () => {
-    dispatch(updateIncidentStatus({ id: incident.id, status: "closed" }));
+  const handleCloseIncident = async () => {
+    try {
+      await updateIncidentStatusById(incident.incidentId, "closed");
+      console.log("Incident closed successfully!");
+    } catch (error) {
+      console.error("Failed to close incident", error);
+    }
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack spacing={3}>
         {/* Header Row */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+        >
           <Box>
             <Typography variant="h5" fontWeight={600}>
               {incident.title}
@@ -74,7 +84,6 @@ const IncidentDetail = () => {
               </Button>
             )}
           </Box>
-
         </Box>
 
         <Divider />
@@ -94,7 +103,7 @@ const IncidentDetail = () => {
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Context
           </Typography>
-          <ManageContext incidentId={incident.id} />
+          <ManageContext incidentId={incident.incidentId} />
         </Box>
       </Stack>
     </Container>

@@ -1,12 +1,14 @@
+export interface IncidentContext {
+  slackChannels?: { slackChannelId: string; name: string }[];
+  zoomCalls?: string[];
+}
+
 export interface Incident {
-  id: string;
+  incidentId: string;
   title: string;
   description: string;
   createdAt: string;
   updatedAt: string;
-  context?: {
-    slackChannels?: string[]; // store channel IDs
-    zoomCalls?: string[];
-  };
+  context?: IncidentContext;
   status: "open" | "closed";
-} 
+}

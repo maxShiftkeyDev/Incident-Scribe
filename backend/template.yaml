@@ -32,7 +32,7 @@ Resources:
       Name: IncidentApi
       StageName: Prod
       Cors:
-        AllowMethods: "'OPTIONS,GET,POST'"
+        AllowMethods: "'OPTIONS,GET,POST,PUT'"
         AllowHeaders: "'Content-Type'"
         AllowOrigin: "'*'"
 
@@ -54,6 +54,18 @@ Resources:
             RestApiId: !Ref IncidentApi
             Path: /incidents
             Method: post
+        PutIncidentContext:
+          Type: Api
+          Properties:
+            RestApiId: !Ref IncidentApi
+            Path: /incidents/{incidentId}/context
+            Method: put
+        PutIncidentStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref IncidentApi
+            Path: /incidents/{incidentId}/status
+            Method: put
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -61,6 +73,7 @@ Resources:
               Action:
                 - dynamodb:PutItem
                 - dynamodb:Scan
+                - dynamodb:UpdateItem
               Resource: !GetAtt IncidentsTable.Arn
 
 Outputs:
