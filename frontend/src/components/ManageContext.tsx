@@ -14,27 +14,31 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../hooks";
+import { useSlack } from "../hooks/useSlack";
 import { useIncidents } from "../hooks/useIncidents";
 import SlackLogo from "../assets/slack-logo.svg";
 
-type SlackChannel = { slackChannelId: string; name: string };
+// ⚠️ Slack API shape: id + name
+type SlackChannel = { id: string; name: string };
 
 export default function ManageContext({ incidentId }: { incidentId: string }) {
   const theme = useTheme();
 
-  // Fetch incident from Redux
+  // 🟢 Fetch incident from Redux
   const incident = useAppSelector((state) =>
     state.incidents.items.find((i) => i.incidentId === incidentId)
   );
 
-  // Local UI state
-  const [channels, setChannels] = useState<SlackChannel[]>([]);
+  // 🟢 Slack channels from Redux (populated by hook)
+  const { channels, fetchSlackChannels } = useSlack();
+
+  // 🟢 Local state for selected IDs (incident context)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Import the hook to call backend updates
+  // 🟢 Hook to update context in backend (DynamoDB)
   const { updateIncidentContextById } = useIncidents();
 
-  // Initialize selected IDs from incident context
+  // 🟢 Initialize selected IDs from incident context
   useEffect(() => {
     if (incident?.context?.slackChannels) {
       const ids = incident.context.slackChannels.map((c) => c.slackChannelId);
@@ -42,46 +46,41 @@ export default function ManageContext({ incidentId }: { incidentId: string }) {
     }
   }, [incident]);
 
-  // Mock channels - Replace with actual API call in production
+  // 🟢 Fetch Slack channels on mount
   useEffect(() => {
-    const mockChannels: SlackChannel[] = [
-      { slackChannelId: "C01", name: "engineering" },
-      { slackChannelId: "C02", name: "product" },
-      { slackChannelId: "C03", name: "support" },
-      { slackChannelId: "C04", name: "ai-ops" },
-      { slackChannelId: "C05", name: "security" },
-    ];
-    setChannels(mockChannels);
-  }, []);
+    fetchSlackChannels();
+  }, [fetchSlackChannels]);
 
-  // Handle selection change
+  // 🟢 Handle selection change
   const handleChange = async (event: any) => {
     const newSelectedIds = event.target.value as string[];
 
-    // Get full objects for selected channels
-    const selectedChannelObjects = channels.filter((c) =>
-      newSelectedIds.includes(c.slackChannelId)
-    );
+    // Convert selected IDs to full Slack channel objects (with id + name)
+    const selectedChannelObjects = channels
+      .filter((c) => newSelectedIds.includes(c.id))
+      .map((c) => ({
+        slackChannelId: c.id,
+        name: c.name,
+      }));
 
     setSelectedIds(newSelectedIds);
 
-    // Save to backend (DynamoDB) via API
+    // Save to backend
     try {
       await updateIncidentContextById(incidentId, {
         slackChannels: selectedChannelObjects,
       });
     } catch (err) {
       console.error("Failed to persist context update", err);
-      // Optionally: show error message to user
     }
   };
 
   if (!incident) return null;
 
-  // Sort channels: selected ones first
+  // 🟢 Sort channels: selected first
   const sortedChannels = [
-    ...channels.filter((c) => selectedIds.includes(c.slackChannelId)),
-    ...channels.filter((c) => !selectedIds.includes(c.slackChannelId)),
+    ...channels.filter((c) => selectedIds.includes(c.id)),
+    ...channels.filter((c) => !selectedIds.includes(c.id)),
   ];
 
   return (
@@ -92,7 +91,7 @@ export default function ManageContext({ incidentId }: { incidentId: string }) {
       <Divider sx={{ my: 2 }} />
 
       <Box display="flex" gap={4} flexWrap="wrap">
-        {/* Slack Section */}
+        {/* 🟢 Slack Section */}
         <Paper
           elevation={1}
           sx={{
@@ -127,19 +126,14 @@ export default function ManageContext({ incidentId }: { incidentId: string }) {
               onChange={handleChange}
               renderValue={(selected) =>
                 sortedChannels
-                  .filter((c) => selected.includes(c.slackChannelId))
+                  .filter((c) => selected.includes(c.id))
                   .map((c) => `#${c.name}`)
                   .join(", ")
               }
             >
               {sortedChannels.map((channel) => (
-                <MenuItem
-                  key={channel.slackChannelId}
-                  value={channel.slackChannelId}
-                >
-                  <Checkbox
-                    checked={selectedIds.includes(channel.slackChannelId)}
-                  />
+                <MenuItem key={channel.id} value={channel.id}>
+                  <Checkbox checked={selectedIds.includes(channel.id)} />
                   <ListItemText primary={`#${channel.name}`} />
                 </MenuItem>
               ))}
@@ -147,7 +141,7 @@ export default function ManageContext({ incidentId }: { incidentId: string }) {
           </FormControl>
         </Paper>
 
-        {/* Zoom Section */}
+        {/* 🟢 Zoom Section (Coming soon) */}
         <Paper
           elevation={1}
           sx={{

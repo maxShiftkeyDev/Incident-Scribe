@@ -14,6 +14,9 @@ Globals:
         INCIDENTS_TABLE: !Ref IncidentsTable
 
 Resources:
+  ##########################################
+  # DynamoDB Table for Incidents
+  ##########################################
   IncidentsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -26,6 +29,9 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
+  ##########################################
+  # API Gateway
+  ##########################################
   IncidentApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -36,6 +42,9 @@ Resources:
         AllowHeaders: "'Content-Type'"
         AllowOrigin: "'*'"
 
+  ##########################################
+  # Incident Management Lambda Function
+  ##########################################
   IncidentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -76,11 +85,161 @@ Resources:
                 - dynamodb:UpdateItem
               Resource: !GetAtt IncidentsTable.Arn
 
+  ##########################################
+  # Slack Integration - List Channels
+  ##########################################
+  SlackListChannelsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/slack/slack-list-channels/
+      Handler: app.handler
+      Events:
+        GetSlackChannels:
+          Type: Api
+          Properties:
+            RestApiId: !Ref IncidentApi
+            Path: /integrations/slack/channels
+            Method: get
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:slack/api-token*
+
+  ##########################################
+  # Slack Integration - Get Channel Content
+  ##########################################
+  # SlackGetChannelMessagesFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/functions/slack-get-channel-messages/
+  #     Handler: index.handler
+  #     Events:
+  #       GetSlackChannelMessages:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref IncidentApi
+  #           Path: /integrations/slack/channels/{channelId}/messages
+  #           Method: get
+  #     Policies:
+  #       - Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Action:
+  #               - secretsmanager:GetSecretValue
+  #             Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:slack/api-token*
+
+  ##########################################
+  # Slack Integration - Post Message
+  ##########################################
+  # SlackPostMessageFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/functions/slack-post-message/
+  #     Handler: index.handler
+  #     Events:
+  #       PostSlackMessage:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref IncidentApi
+  #           Path: /integrations/slack/messages
+  #           Method: post
+  #     Policies:
+  #       - Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Action:
+  #               - secretsmanager:GetSecretValue
+  #             Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:slack/api-token*
+
+  ##########################################
+  # Zoom Integration - List Transcripts
+  ##########################################
+  # ZoomListTranscriptsFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/functions/zoom-list-transcripts/
+  #     Handler: index.handler
+  #     Events:
+  #       GetZoomTranscripts:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref IncidentApi
+  #           Path: /integrations/zoom/transcripts
+  #           Method: get
+  #     Policies:
+  #       - Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Action:
+  #               - secretsmanager:GetSecretValue
+  #             Resource: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:zoom/api-token*
+
+  ##########################################
+  # Zoom Integration - Download Transcript
+  ##########################################
+  # ZoomDownloadTranscriptFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/functions/zoom-download-transcript/
+  #     Handler: index.handler
+  #     Events:
+  #       DownloadZoomTranscript:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref IncidentApi
+  #           Path: /integrations/zoom/transcripts/{transcriptId}/download
+  #           Method: get
+  #     Policies:
+  #       - Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Action:
+  #               - secretsmanager:GetSecretValue
+  #             Resource: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:zoom/api-token*
+
+  ##########################################
+  # AI Analysis - Trigger AI Content Generation
+  ##########################################
+  # AIAnalysisFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/functions/ai-analysis/
+  #     Handler: index.handler
+  #     Events:
+  #       PostAIAnalysis:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref IncidentApi
+  #           Path: /ai/analysis
+  #           Method: post
+  #     Policies:
+  #       - Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Action:
+  #               - secretsmanager:GetSecretValue
+  #             Resource: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:openai/api-token*
+
 Outputs:
-  ApiEndpoint:
-    Description: "API Gateway endpoint URL"
+  IncidentsApiEndpoint:
+    Description: "API Gateway endpoint for incident management"
     Value: !Sub "https://${IncidentApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/incidents"
 
+  SlackApiEndpoint:
+    Description: "Base path for Slack integration APIs"
+    Value: !Sub "https://${IncidentApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/integrations/slack"
+
+  # ZoomApiEndpoint:
+  #   Description: "Base path for Zoom integration APIs"
+  #   Value: !Sub "https://${IncidentApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/integrations/zoom"
+
+  # AIAnalysisApiEndpoint:
+  #   Description: "Endpoint for AI analysis requests"
+  #   Value: !Sub "https://${IncidentApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ai/analysis"
+
   IncidentsTableName:
-    Description: "DynamoDB Table Name"
+    Description: "DynamoDB Table Name for Incidents"
     Value: !Ref IncidentsTable
